@@ -3,21 +3,58 @@ install.packages(c("broom", "coefplot", "cowplot", "GGally",
                     "ggrepel", "ggridges", "gridExtra", 
                     "here", "interplot","margins", "maps", "mapproj", 
                      "mapdata", "MASS", "quantreg", "rlang", "survey", 
-                     "srvyr", "viridis", "viridisLite"), repos="http://cran.rstudio.com" )
+                     "srvyr", "viridis", "viridisLite"))
+
+library(tidyverse)
+library(broom)
+library(coefplot)
+library(cowplot)
+library(GGally)
+library(ggrepel)
+library(ggridges)
+library(gridExtra)
+library(here)
+# library(interplot)
+
+library(margins)
+library(maps)
+library(mapproj)
+library(mapdata)
+library(MASS)
+library(quantreg)
+library(rlang)
+library(survey)
+library(srvyr)
+library(viridis)
+library(viridisLite)
+library(devtools)
+library(socviz)
 library(gapminder)
 library(ggplot2)
 library(scales)
 library(here)
 
 install.packages("survey")
+
 install.packages("coefplot")
+install.packages("cowplot")
 install.packages("GGally")
+
 install.packages("ggrepel")
 install.packages("ggridges")
 install.packages("gridExtra")
+
 install.packages("here")
 install.packages("interplot")
+install.packages("interactionTest")
+
 install.packages("margins")
+install.packages("maps")
+install.packages("mapproj")
+install.packages("mapdata")
+
+
+
 install.packages("MASS")
 install.packages("quantreg")
 install.packages("rlang")
@@ -110,6 +147,7 @@ p2 + geom_line(aes(group=country), colour="gray70") +
      scale_y_log10(labels=dollar) + 
      facet_wrap(~continent, ncol = 5) + 
      labs(title="GDP per capita over time on Five Continents")
+
 
 p3 + geom_line(aes(group=country), colour="gray70") + 
   geom_smooth(size=1.1, se=FALSE, method = "loess") + 
