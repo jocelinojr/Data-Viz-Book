@@ -117,21 +117,15 @@ p.cont + geom_jitter() + geom_boxplot() + scale_x_log10()
 
 
 # See how the Life Expectancy evolves over time per continent
-life.exp <- ggplot(data=gapminder, mapping = aes(x=continent, y=lifeExp))
+life.exp <- ggplot(data=gapminder, mapping = aes(x=continent, y=lifeExp)) 
 life.exp + geom_jitter(mapping = aes(colour=year)) + geom_boxplot() + 
-           labs(title="Expectativa de vida por continente nos anos")
+           labs(title="Expectativa de vida por continente nos anos") + 
+           theme_light()   
 
 # See how the Life Expectancy evolves over time per continent
 gdp <- ggplot(data=gapminder, mapping = aes(x=continent, y=gdpPercap))
 gdp + geom_jitter(mapping = aes(colour=year)) + geom_boxplot() + 
   labs(title="GDP por continente nos anos")
-
-
-
-
-###################################################
-# PART 2
-# gss_m
 
 
 # Usando Facets para ver como o GDP dos países se comporta com o passar dos anos
@@ -142,11 +136,11 @@ p2 + geom_line(aes(group=country)) + facet_wrap(~continent)
 
 # Improving...
 p2 + geom_line(aes(group=country), colour="gray70") + 
-     geom_smooth(size=1.1, se=FALSE, method = "loess") + 
-     # muda a escala do eixo y, já que as linhas valores estão muito "pegadas"  
-     scale_y_log10(labels=dollar) + 
-     facet_wrap(~continent, ncol = 5) + 
-     labs(title="GDP per capita over time on Five Continents")
+  geom_smooth(size=1.1, se=FALSE, method = "loess") + 
+  # muda a escala do eixo y, já que as linhas valores estão muito "pegadas"  
+  scale_y_log10(labels=dollar) + 
+  facet_wrap(~continent, ncol = 5) + 
+  labs(title="GDP per capita over time on Five Continents")
 
 
 p3 + geom_line(aes(group=country), colour="gray70") + 
@@ -154,6 +148,53 @@ p3 + geom_line(aes(group=country), colour="gray70") +
   # muda a escala do eixo y, já que as linhas valores estão muito "pegadas"  
   facet_wrap(~continent, ncol = 5) + 
   labs(title="Life Expectancy over time on Five Continents")
+
+
+
+#########################################################
+# Where to go next
+
+#---------------------------------------------------------
+# Revisiting gapminder
+pnext <- ggplot(data=gapminder, mapping=aes(x=pop, y=gdpPercap, colour=continent))
+
+# para exportar para pdf
+# pdf("facet.pdf",width=150,height=80,paper='special') 
+
+pnext + geom_point() + scale_x_log10(labels=comma) + 
+         scale_y_log10(labels=dollar) + theme_gray() +
+         facet_wrap(~country)
+# fecha a exportação do pdf
+# dev.off()
+
+
+dados <- subset(gapminder, subset=gapminder$country %in% c("China", "Afghanistan", "Ghana", "Brazil"))
+
+
+# Selecionando alguns paises para comparação
+pnext <- ggplot(data= dados, mapping = aes(x=pop, y=gdpPercap, colour=continent))
+pnext + geom_point() + scale_x_log10(labels=comma) + 
+  scale_y_log10(labels=dollar) + theme_gray() +
+  facet_wrap(~country)
+
+
+# Histogram 2D
+glimpse(gapminder)
+p <- ggplot(data = gapminder, mapping = aes(x=lifeExp, y=gdpPercap))
+p + geom_bin2d() + theme_light()
+
+
+
+
+
+
+
+###################################################
+# PART 2
+# gss_m
+
+
+
 
 
 
@@ -227,7 +268,6 @@ p2 + geom_histogram(alpha=0.4)
 p <- ggplot(data =midwest, mapping=aes(x=area)) + theme_gray()
 p + geom_density()
 
-?midwest
 
 p <- ggplot(data=midwest, mapping = aes(x=area, fill=state, colour=state))
 p +   geom_density(alpha=0.3)
@@ -242,6 +282,44 @@ ptitanic <- ggplot(data = titanic, mapping = aes(x=fate, y=percent,
 ptitanic + geom_bar(stat = "identity", position = "dodge") +
   theme(legend.position = "top") + theme_light() + 
   labs(title = "Titanic survivor statistics")
+
+
+
+
+##########################################################################
+# Where to go next
+
+glimpse(gss_sm)
+
+# muda a função estatística de count para prop
+p0 <- ggplot(data = gss_sm, mapping = aes(x=wtssall))
+# monta um grid (facet) com sexo nas linhas e raça nas colunas
+p0 + theme_light() + geom_histogram() + facet_grid(sex~race) + 
+   labs(title="Weight per Sex and Race", 
+        subtitle="Usando facet sex~race",
+        caption="Fonte: gapminder")
+
+# monta o grid de outra forma
+p0 + theme_light() + geom_histogram() + facet_grid(~sex+race)+
+  labs(title="Weight per Sex and Race", 
+       subtitle="Usando facet ~sex+race",
+       caption="Fonte: gapminder")
+
+# Experimentando outro geom (freqpoly) em vez do histogram
+p0 + theme_light() + geom_freqpoly() + facet_wrap(~sex+race)
+
+
+
+
+
+
+     
+
+
+
+
+
+
 
 
 # OECD Table
@@ -276,13 +354,37 @@ p + geom_bar(stat = "identity") + theme_light() +
 
 
 
-
   
   
+#######################################
+# Chapter 5 (Preparing the data to plot)
+glimpse(gss_sm)
+rel_by_region <- gss_sm %>%
+  group_by(bigregion, religion) %>%
+  summarise(N = n()) %>%
+  mutate(freq=N / sum(N), pct = round((freq*100), 0))
 
 
+# checkin if the percentages of religions sum to 100% by region
+rel_by_region %>% 
+    group_by(bigregion) %>%
+    summarise(total=sum(pct))
 
-     
+
+# Ploting the fruit of our work
+p <- ggplot(data = rel_by_region, mapping=aes(x=bigregion, y=pct, fill=religion))
+p + geom_col(position = "dodge2") + theme_light() + 
+  labs(title="Religion affilation per region", y="Percent", x="Region")
+
+# doing better
+# rotating the coordinate system
+p <- ggplot(rel_by_region, aes(x=religion, y=pct, fill=religion)) + theme_light()
+p + geom_col(position = "dodge2") + coord_flip() + facet_grid(~bigregion) + 
+  guides(fill = FALSE) + 
+  labs(y = "Percent %", x=NULL, title="Religion aff. per region")
+  
+
+   
 
 
 
