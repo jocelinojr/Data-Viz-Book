@@ -384,13 +384,58 @@ p + geom_col(position = "dodge2") + coord_flip() + facet_grid(~bigregion) +
   labs(y = "Percent %", x=NULL, title="Religion aff. per region")
   
 
-   
+####################################################
+
+p <- ggplot(data=organdata, mapping = aes(x=year, y=donors))
+p + geom_point()
+
+# agrupando por ano com facets
+p + geom_line(aes(group=country)) + facet_wrap(~country) + theme_light()
+
+
+# usando Boxplots
+p <- ggplot(data=organdata, mapping=aes(x=country, y=donors))
+p + geom_boxplot()
+
+# rataciona os eixos para ler os labels dos paises
+p + geom_boxplot() + coord_flip() + theme_light()
+
+
+# melhorando o gráfico ao ordenar pelas médias de doações dos paises
+p <- ggplot(data=organdata, mapping = aes(x = reorder(country, donors, na.rm=TRUE), 
+                                          y=donors, fill=world))
+p + geom_boxplot() + labs(x=NULL) + coord_flip() + theme_light()
+
+
+# usando jitter
+p <- ggplot(data=organdata, mapping=aes(x=reorder(country, donors, na.rm=TRUE),
+                                        y=donors, color=world))
+
+p + geom_jitter() + coord_flip() + theme_light() + labs(x=NULL)
+
+
+#
+glimpse(gss_sm)
+
+# Usando programação funcional para obter um sumário de todas variáveis numéricas
+# do dataset por degree, region
+
+by_region <- gss_sm %>% group_by(degree, region) %>% 
+             summarize_if(is.numeric, funs(sum, mean, sd), na.rm=TRUE)  %>%
+             ungroup()
+
+p <- ggplot(data=by_region, mapping = aes(x=childs_mean, y=reorder(region, childs_mean), 
+                                          color=degree))
+
+p + geom_point(size=3) + theme_light() + facet_wrap(~degree, ncol=1, scales="free_y")
 
 
 
+by_region_only <- gss_sm %>% group_by(region) %>% 
+  summarize_if(is.numeric, funs(sum, mean, sd), na.rm=TRUE)  %>%
+  ungroup()
 
+p <- ggplot(data=by_region_only, mapping = aes(x=childs_mean, y=reorder(region, childs_mean)))
 
-
-
-
+p + geom_point(size=3) + theme_light()
 
