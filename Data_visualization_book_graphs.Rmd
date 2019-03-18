@@ -1,0 +1,210 @@
+---
+title: "Gráficos do Livro: Data Visualization"
+author: "Jocelino Júnior"
+date: "18 de março de 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+Esse é um R Markdown contendo os princiapais gráficos com os respectivos 
+códigos do Livro Data Visualization de Kieran Healy (Duke University)
+acessível em https://socviz.co/
+
+
+
+### Bibliotecas necessárias para rodar 
+
+``` {r bibliotecas, message=FALSE }
+# Carrega as bibliotecas
+
+library(tidyverse)
+library(broom)
+library(coefplot)
+library(cowplot)
+library(GGally)
+library(ggrepel)
+library(ggridges)
+library(gridExtra)
+library(here)
+# library(interplot)
+library(margins)
+library(maps)
+library(mapproj)
+library(mapdata)
+library(MASS)
+library(quantreg)
+library(rlang)
+library(survey)
+library(srvyr)
+library(viridis)
+library(viridisLite)
+library(devtools)
+library(socviz)
+library(gapminder)
+library(ggplot2)
+library(scales)
+library(here)
+library(gapminder)
+library(dplyr)
+library(socviz)
+````
+
+### Gapminder
+
+
+Plotando life expectancy x gdpPercap
+
+Cria os objetos gráficos
+```{r gapminder1}
+
+p <- ggplot(data = gapminder, mapping = aes(x=gdpPercap, y=lifeExp)) +
+    theme_gray() # sets the default theme of ggplot
+
+# by continent
+p.cont <- ggplot(data = gapminder, mapping = aes(x=gdpPercap, 
+                                                 y=lifeExp,
+                                                 colour=continent)) +
+       theme_dark() # use a dark theme
+
+# making a sccater plot
+p + geom_point()
+
+```
+
+
+
+
+
+
+desenha a smooth curve com o médoto default "gam"
+``` {r gapminder 2, message=FALSE}
+p + geom_point() + geom_smooth()
+```
+
+
+desenha com o método lm (linear model)
+
+``` {r gapminder 3}
+p + geom_point() + geom_smooth(method = "lm")
+```
+
+
+Mudando a escala no eixo x
+```{r gapminder4 }
+
+p + geom_point(alpha=0.3) + geom_smooth(method = "gam") + 
+                   scale_x_log10(labels=comma) + 
+                  labs(x = "GDP per capita", y = "Life Expectancy",
+                       title="GDP x Life Expectancy", 
+                       subtitle="Data points are country years",
+                       caption="source: gapminder")  
+```
+
+
+Gráfico segregado por continente
+``` {r }
+p.cont + geom_point() + geom_smooth(method = "loess") +
+  scale_x_log10(labels=dollar)
+```
+
+
+Deixando apenas um "smooth"
+
+``` {r }
+p + geom_point(mapping = aes(colour=continent)) + 
+  geom_smooth(method = "loess") +  
+  scale_x_log10(label=dollar)
+```
+
+Mapeando a população como um gradiante numa escala logarítimica
+
+``` {r }
+p + geom_point(mapping = aes(colour= log(pop))) + scale_x_log10(label=comma)
+
+p + geom_point(mapping = aes(colour= year)) + scale_x_log10(label=comma)
+
+p.cont + geom_jitter() + geom_boxplot() + scale_x_log10()
+
+
+# See how the Life Expectancy evolves over time per continent
+life.exp <- ggplot(data=gapminder, mapping = aes(x=continent, y=lifeExp)) 
+life.exp + geom_jitter(mapping = aes(colour=year)) + geom_boxplot() + 
+           labs(title="Expectativa de vida por continente nos anos") + 
+           theme_light()   
+
+# See how the Life Expectancy evolves over time per continent
+gdp <- ggplot(data=gapminder, mapping = aes(x=continent, y=gdpPercap))
+gdp + geom_jitter(mapping = aes(colour=year)) + geom_boxplot() + 
+  labs(title="GDP por continente nos anos")
+
+```
+
+
+Usando Facets para ver como o GDP dos países se comporta com o passar dos anos
+
+``` {r }
+p2 <- ggplot(data=gapminder, mapping=aes(x=year, y=gdpPercap))
+p3 <- ggplot(data=gapminder, mapping=aes(x=year, y=lifeExp))
+# USando facet_warp em vez de facet_grid
+p2 + geom_line(aes(group=country)) + facet_wrap(~continent)
+```
+
+
+Melhorando o gráfico
+
+``` {r }
+p2 + geom_line(aes(group=country), colour="gray70") + 
+  geom_smooth(size=1.1, se=FALSE, method = "loess") + 
+  # muda a escala do eixo y, já que as linhas valores estão muito "pegadas"  
+  scale_y_log10(labels=dollar) + 
+  facet_wrap(~continent, ncol = 5) + 
+  labs(title="GDP per capita over time on Five Continents")
+
+```
+
+Muda a escala do eixo y, já que as linhas valores estão muito juntas
+
+``` {r}  
+p3 + geom_line(aes(group=country), colour="gray70") + 
+  geom_smooth(size=1.1, se=FALSE, method = "loess") + 
+  facet_wrap(~continent, ncol = 5) + 
+  labs(title="Life Expectancy over time on Five Continents")
+```
+
+
+### Revisiting gapminder
+
+``` {r }
+pnext <- ggplot(data=gapminder, mapping=aes(x=pop, y=gdpPercap, colour=continent))
+
+# para exportar para pdf
+# pdf("facet.pdf",width=150,height=80,paper='special') 
+
+pnext + geom_point() + scale_x_log10(labels=comma) + 
+         scale_y_log10(labels=dollar) + theme_gray() +
+         facet_wrap(~country)
+# fecha a exportação do pdf
+# dev.off()
+
+
+dados <- subset(gapminder, subset=gapminder$country %in% c("China", "Afghanistan", "Ghana", "Brazil"))
+
+
+# Selecionando alguns paises para comparação
+pnext <- ggplot(data= dados, mapping = aes(x=pop, y=gdpPercap, colour=continent))
+pnext + geom_point() + scale_x_log10(labels=comma) + 
+  scale_y_log10(labels=dollar) + theme_gray() +
+  facet_wrap(~country)
+
+
+# Histogram 2D
+glimpse(gapminder)
+p <- ggplot(data = gapminder, mapping = aes(x=lifeExp, y=gdpPercap))
+p + geom_bin2d() + theme_light()
+
+```
